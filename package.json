@@ -1,7 +1,7 @@
 {
-  "name": "hello-world-javascript-action",
+  "name": "update-npm-deps",
   "version": "1.0.0",
-  "description": "This action prints \"Hello World\" or \"Hello\" + the name of a person to greet to the log.",
+  "description": "GitHub Action to update NPM dependencies in protected branches",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/actions/hello-world-javascript-action#readme",
   "dependencies": {
     "@actions/core": "^1.1.0",
-    "@actions/github": "^1.1.0"
+    "cosmiconfig": "^7.0.0",
+    "execa": "^5.0.0"
   }
 }
