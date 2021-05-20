@@ -19,7 +19,8 @@
   "homepage": "https://github.com/actions/hello-world-javascript-action#readme",
   "dependencies": {
     "@actions/core": "^1.1.0",
+    "@actions/exec": "^1.0.4",
     "cosmiconfig": "^7.0.0",
-    "execa": "^5.0.0"
+    "pluralize": "^8.0.0"
   }
 }

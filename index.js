@@ -1,9 +1,21 @@
 const fs = require("fs");
 const core = require("@actions/core");
+const exec = require("@actions/exec");
 const { cosmiconfig } = require("cosmiconfig");
-const execa = require("execa");
+const pluralize = require("pluralize");
 
 const MAIN_BRANCHES = ["main", "master"];
+
+async function getCommandOutput(commandLine, args) {
+  let stdout = "";
+  const options = {
+    listeners: {
+      stdout: (data) => (stdout += data.toString())
+    }
+  };
+  await exec.exec(commandLine, args, options);
+  return stdout;
+}
 
 function getDependencies(branch, dev) {
   const dependencies = dev ? branch.devDependencies : branch.dependencies;
@@ -23,11 +35,11 @@ async function updateDependency(pkgName, pkgTag, dev) {
   const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
   const dependencies = packageJson[dev ? "devDependencies" : "dependencies"] || {};
   const currentVersion = dependencies[pkgName];
-  const latestVersion = (await execa("npm", ["view", `${pkgName}@${pkgTag}`, "version"])).stdout;
+  const latestVersion = (await getCommandOutput("npm", ["view", `${pkgName}@${pkgTag}`, "version"])).trim();
 
   if (currentVersion !== latestVersion) {
     const npmArgs = dev ? ["--save-dev"] : ["--save-prod", "--save-exact"];
-    await execa("npm", ["install", `${pkgName}@${latestVersion}`, ...npmArgs]);
+    await exec.exec("npm", ["install", `${pkgName}@${latestVersion}`, ...npmArgs]);
   }
 }
 
@@ -39,6 +51,9 @@ async function updateDependency(pkgName, pkgTag, dev) {
   if (branch != null) {
     const dependencies = getDependencies(branch, false);
     const devDependencies = getDependencies(branch, true);
+
+    core.info(`Checking for updates to ${pluralize("dependency", Object.keys(dependencies).length, true)} and ` +
+      `${pluralize("dev dependency", Object.keys(devDependencies).length, true)}`);
 
     if (branch.dependencies) {
       for (const [pkgName, pkgTag] of Object.entries(dependencies)) {
@@ -54,9 +69,9 @@ async function updateDependency(pkgName, pkgTag, dev) {
 
     if (fs.existsSync("lerna.json") && (branch.dependencies || branch.devDependencies)) {
       const dependencyList = [...Object.keys(dependencies), ...Object.keys(devDependencies)];
-      await execa("npx", ["-y", "--", "syncpack", "fix-mismatches", "--dev", "--prod", "--filter", dependencyList.join("|")]);
-      await execa("git", ["checkout", "package-lock.json"]);
-      await execa("npm", ["install"]);
+      await exec.exec("npx", ["-y", "--", "syncpack", "fix-mismatches", "--dev", "--prod", "--filter", dependencyList.join("|")]);
+      await exec.exec("git", ["checkout", "package-lock.json"]);
+      await exec.exec("npm", ["install"]);
     }
   } else {
     core.info("Nothing to do since this is not a protected branch or a PR based on one");
