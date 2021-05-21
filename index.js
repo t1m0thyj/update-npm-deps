@@ -81,7 +81,7 @@ async function updateDependency(pkgName, pkgTag, dev) {
 
     if (updateDetails.length > 0 && core.getInput("commit") === "true") {
       await exec.exec("git", ["add", ...changedFiles]);
-      await exec.exec("git", ["commit", "-s", "-m", "Update dependencies\n\n" + updateDetails.join("\n")]);
+      await exec.exec("git", ["commit", "-s", "-m", "Update dependencies [ci skip]\n\n" + updateDetails.join("\n")]);
     }
   } else {
     core.info("Nothing to do since this is not a protected branch or a PR based on one");
