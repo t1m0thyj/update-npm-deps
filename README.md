@@ -2,13 +2,13 @@
 
 GitHub Action to update NPM dependencies in protected branches
 
-<!-- ## Inputs
+## Inputs
 
-### `who-to-greet`
+### `commit`
 
-**Required** The name of the person to greet. Default `"World"`.
+Commit changes to package.json and package-lock.json. Default `false`.
 
-## Outputs
+<!-- ## Outputs
 
 ### `time`
 
@@ -18,4 +18,6 @@ The time we greeted you. -->
 
 ```yaml
 uses: t1m0thyj/update-npm-deps@master
+with:
+  commit: true
 ```

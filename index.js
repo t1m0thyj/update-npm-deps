@@ -5,6 +5,7 @@ const { cosmiconfig } = require("cosmiconfig");
 const pluralize = require("pluralize");
 
 const MAIN_BRANCHES = ["main", "master"];
+let updateDetails = [];
 
 async function getCommandOutput(commandLine, args) {
   let stdout = "";
@@ -40,6 +41,7 @@ async function updateDependency(pkgName, pkgTag, dev) {
   if (currentVersion !== latestVersion) {
     const npmArgs = dev ? ["--save-dev"] : ["--save-prod", "--save-exact"];
     await exec.exec("npm", ["install", `${pkgName}@${latestVersion}`, ...npmArgs]);
+    updateDetails.push(`${pkgName}: ${currentVersion} -> ${latestVersion}`);
   }
 }
 
@@ -51,6 +53,7 @@ async function updateDependency(pkgName, pkgTag, dev) {
   if (branch != null) {
     const dependencies = getDependencies(branch, false);
     const devDependencies = getDependencies(branch, true);
+    const changedFiles = ["package.json", "package-lock.json"];
 
     core.info(`Checking for updates to ${pluralize("dependency", Object.keys(dependencies).length, true)} and ` +
       `${pluralize("dev dependency", Object.keys(devDependencies).length, true)}`);
@@ -68,10 +71,17 @@ async function updateDependency(pkgName, pkgTag, dev) {
     }
 
     if (fs.existsSync("lerna.json") && (branch.dependencies || branch.devDependencies)) {
+      changedFiles.push("**/package.json");
       const dependencyList = [...Object.keys(dependencies), ...Object.keys(devDependencies)];
+
       await exec.exec("npx", ["-y", "--", "syncpack", "fix-mismatches", "--dev", "--prod", "--filter", dependencyList.join("|")]);
       await exec.exec("git", ["checkout", "package-lock.json"]);
       await exec.exec("npm", ["install"]);
+    }
+
+    if (updateDetails.length > 0 && core.getInput("commit") === "true") {
+      await exec.exec("git", ["add", ...changedFiles]);
+      await exec.exec("git", ["commit", "-s", "-m", "Update dependencies\n\n" + updateDetails.join("\n")]);
     }
   } else {
     core.info("Nothing to do since this is not a protected branch or a PR based on one");

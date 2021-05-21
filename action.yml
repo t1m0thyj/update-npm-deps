@@ -1,10 +1,10 @@
 name: 'Update NPM Deps'
 description: 'GitHub Action to update NPM dependencies in protected branches'
-# inputs:
-#   who-to-greet:  # id of input
-#     description: 'Who to greet'
-#     required: true
-#     default: 'World'
+inputs:
+  commit:  # id of input
+    description: 'Commit changes to package.json and package-lock.json'
+    required: false
+    default: false
 # outputs:
 #   time: # id of output
 #     description: 'The time we greeted you'
