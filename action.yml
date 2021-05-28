@@ -4,10 +4,10 @@ inputs:
   commit:  # id of input
     description: 'Commit changes to package.json and package-lock.json'
     required: false
-    default: false
-# outputs:
-#   time: # id of output
-#     description: 'The time we greeted you'
+    default: 'false'
+outputs:
+  publish: # id of output
+    description: 'Branch is in release config and eligible for publish'
 runs:
   using: 'node12'
   main: 'index.js'

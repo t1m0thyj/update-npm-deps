@@ -4,7 +4,6 @@ const exec = require("@actions/exec");
 const { cosmiconfig } = require("cosmiconfig");
 const pluralize = require("pluralize");
 
-const MAIN_BRANCHES = ["main", "master"];
 let updateDetails = [];
 
 async function getCommandOutput(commandLine, args) {
@@ -26,7 +25,7 @@ function getDependencies(branch, dev) {
 
   const dependencyMap = {};
   for (const pkgName of dependencies) {
-    dependencyMap[pkgName] = branch.channel || (MAIN_BRANCHES.includes(branch.name) ? "latest" : branch.name);
+    dependencyMap[pkgName] = branch.channel || (["main", "master"].includes(branch.name) ? "latest" : branch.name);
   }
 
   return dependencyMap;
@@ -83,6 +82,8 @@ async function updateDependency(pkgName, pkgTag, dev) {
       await exec.exec("git", ["add", ...changedFiles]);
       await exec.exec("git", ["commit", "-s", "-m", "Update dependencies [ci skip]\n\n" + updateDetails.join("\n")]);
     }
+
+    core.setOutput("publish", true);
   } else {
     core.info("Nothing to do since this is not a protected branch or a PR based on one");
   }
